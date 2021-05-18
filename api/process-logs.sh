@@ -7,3 +7,6 @@ cd $folder_name
 sed -i '1d;$d' *
 zip processed_logs *
 mv processed_logs.zip ../
+cd ..
+rm $file_name
+rm -R -- */

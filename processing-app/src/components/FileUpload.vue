@@ -1,5 +1,6 @@
 <template>
   <div class="file-upload">
+    <h3>Processing tool for ISSUM Campus Simulator Logs</h3>
     <input type="file" @change="onFileChange" />
     <div v-if="progress" class="progess-bar" :style="{ width: progress }">
       {{ progress }}
@@ -18,8 +19,19 @@
     >
       Process
     </button>
-    <button class="upload-button" :disabled="!this.isDownloadReady">
+    <button
+      @click="onDownloadFile"
+      class="upload-button"
+      :disabled="!this.isDownloadReady"
+    >
       Download
+    </button>
+    <button
+      @click="onContinue"
+      class="upload-button"
+      :disabled="!this.isContinueReady"
+    >
+      Continue Processing
     </button>
   </div>
 </template>
@@ -34,6 +46,7 @@ export default {
       progress: 0,
       uploadedFile: "",
       isDownloadReady: false,
+      isContinueReady: false,
     };
   },
   methods: {
@@ -63,7 +76,51 @@ export default {
         });
     },
     onProcessFile() {
-      this.isDownloadReady = true;
+      this.progress = 0;
+      axios
+        .post(
+          "http://localhost:3001/process",
+          {
+            fileName: this.uploadedFile,
+          },
+          {
+            onUploadProgress: (ProgressEvent) => {
+              let progress =
+                Math.round((ProgressEvent.loaded / ProgressEvent.total) * 100) +
+                "%";
+              this.progress = progress;
+            },
+          }
+        )
+        .then((res) => {
+          this.isDownloadReady = res.data.isDownloadReady;
+          console.log(res);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    },
+    onDownloadFile() {
+      axios({
+        method: "GET",
+        url: "http://localhost:3001/download",
+        responseType: "blob",
+      })
+        .then((res) => {
+          var fileURL = window.URL.createObjectURL(new Blob([res.data]));
+          var fileLink = document.createElement("a");
+          fileLink.href = fileURL;
+          fileLink.setAttribute("download", "processed_logs.zip");
+          document.body.appendChild(fileLink);
+          fileLink.click();
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+      this.isContinueReady = true;
+    },
+    onContinue() {
+      location.reload();
     },
   },
 };
@@ -95,7 +152,7 @@ button {
 .upload-button {
   width: 7rem;
   padding: 0.5rem;
-  background-color: #278be9;
+  background-color: #2c3e50;
   color: #fff;
   font-size: 1rem;
   font-weight: 500;
