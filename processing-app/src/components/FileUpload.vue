@@ -59,7 +59,7 @@ export default {
       formData.append("logs", this.selectedFile);
 
       axios
-        .post("http://localhost:3001/upload", formData, {
+        .post("https://issum.sidharth.me/api/upload", formData, {
           onUploadProgress: (ProgressEvent) => {
             let progress =
               Math.round((ProgressEvent.loaded / ProgressEvent.total) * 100) +
@@ -79,7 +79,7 @@ export default {
       this.progress = 0;
       axios
         .post(
-          "http://localhost:3001/process",
+          "https://issum.sidharth.me/api/process",
           {
             fileName: this.uploadedFile,
           },
@@ -103,7 +103,7 @@ export default {
     onDownloadFile() {
       axios({
         method: "GET",
-        url: "http://localhost:3001/download",
+        url: "https://issum.sidharth.me/api/download",
         responseType: "blob",
       })
         .then((res) => {
